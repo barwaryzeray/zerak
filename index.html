@@ -7,16 +7,68 @@
       margin: 0;
       overflow: hidden;
       background: black;
+      font-family: Arial, sans-serif;
     }
     canvas {
       display: block;
       margin: auto;
       background: #000;
     }
+    /* Controls container */
+    #controls {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    /* Button styling */
+    #controls .group button,
+    #shootBtn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #888;
+      color: white;
+      font-size: 24px;
+      padding: 10px 20px;
+      margin: 0 5px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #startButton, #restartButton {
+      position: fixed;
+      bottom: 50%;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #888;
+      color: white;
+      font-size: 28px;
+      padding: 12px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+      display: none;
+    }
   </style>
 </head>
 <body>
 <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<!-- Control Buttons -->
+<div id="controls">
+  <div class="group">
+    <button id="leftBtn">◀️</button>
+    <button id="rightBtn">▶️</button>
+  </div>
+  <button id="shootBtn">🔫</button>
+</div>
+
+<!-- Start and Restart Buttons -->
+<button id="startButton">Start Game</button>
+<button id="restartButton">Restart Game</button>
+
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -31,7 +83,7 @@ enemyImg.src = "enemy.png";
 const bgImg = new Image();
 bgImg.src = "background.png";
 
-// Load sounds (MP3 format)
+// Load sounds
 const shootSound = new Audio("shoot.mp3");
 const explosionSound = new Audio("explosion.mp3");
 
@@ -44,36 +96,68 @@ let bullets = [];
 let enemies = [];
 let score = 0;
 
-// Handle input
-document.addEventListener("keydown", e => {
-  if (gameState === "start" && e.key === " ") {
-    gameState = "playing";
-  } else if (gameState === "gameover" && e.key.toLowerCase() === "r") {
-    resetGame();
-  }
+// Buttons
+const startButton = document.getElementById("startButton");
+const restartButton = document.getElementById("restartButton");
+const controls = document.getElementById("controls");
 
+// Show Start button initially
+startButton.style.display = "block";
+controls.style.display = "none";
+restartButton.style.display = "none";
+
+// Start game button
+startButton.addEventListener("click", () => {
+  gameState = "playing";
+  startButton.style.display = "none";
+  controls.style.display = "flex";
+});
+
+// Restart game button
+restartButton.addEventListener("click", () => {
+  resetGame();
+  gameState = "playing";
+  restartButton.style.display = "none";
+  controls.style.display = "flex";
+});
+
+// Keyboard controls
+document.addEventListener("keydown", e => {
   if (gameState === "playing") {
-    if (e.key === "ArrowLeft" && plane.x > 0) plane.x -= 20;
-    if (e.key === "ArrowRight" && plane.x < canvas.width - plane.w) plane.x += 20;
-    if (e.key === " " || e.key === "ArrowUp") {
-      bullets.push({ x: plane.x + plane.w / 2 - 2, y: plane.y });
-      shootSound.pause();
-      shootSound.currentTime = 0;
-      shootSound.play().catch(err => console.log("Shoot sound error:", err));
-    }
+    if (e.key === "ArrowLeft" && plane.x > 0) plane.x -= 40;
+    if (e.key === "ArrowRight" && plane.x < canvas.width - plane.w) plane.x += 40;
+    if (e.key === " " || e.key === "ArrowUp") shoot();
   }
 });
 
-// Reset the game
+// Mobile controls
+document.getElementById("leftBtn").addEventListener("touchstart", () => {
+  if (gameState === "playing" && plane.x > 0) plane.x -= 40;
+});
+document.getElementById("rightBtn").addEventListener("touchstart", () => {
+  if (gameState === "playing" && plane.x < canvas.width - plane.w) plane.x += 40;
+});
+document.getElementById("shootBtn").addEventListener("touchstart", () => {
+  if (gameState === "playing") shoot();
+});
+
+// Shoot function
+function shoot() {
+  bullets.push({ x: plane.x + plane.w / 2 - 2, y: plane.y });
+  shootSound.pause();
+  shootSound.currentTime = 0;
+  shootSound.play().catch(err => console.log("Shoot sound error:", err));
+}
+
+// Reset game
 function resetGame() {
   plane = { x: 180, y: 500, w: 40, h: 40 };
   bullets = [];
   enemies = [];
   score = 0;
-  gameState = "start";
 }
 
-// Draw functions
+// Drawing functions
 function drawBackground() {
   ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 }
@@ -129,6 +213,8 @@ function checkGameOver() {
   for (let e of enemies) {
     if (e.y + 40 >= plane.y) {
       gameState = "gameover";
+      controls.style.display = "none";
+      restartButton.style.display = "block";
     }
   }
 }
@@ -145,8 +231,6 @@ function drawStartScreen() {
   ctx.fillStyle = "white";
   ctx.font = "28px Arial";
   ctx.fillText("Arcade Plane Shooter", 50, 250);
-  ctx.font = "20px Arial";
-  ctx.fillText("Press SPACE to start", 100, 300);
 }
 
 function drawGameOver() {
@@ -158,7 +242,6 @@ function drawGameOver() {
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.fillText("Score: " + score, 150, 300);
-  ctx.fillText("Press R to restart", 120, 350);
 }
 
 // Game loop
@@ -180,7 +263,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Start loop
 gameLoop();
 </script>
 </body>
