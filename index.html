@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,49 +9,26 @@
 </head>
 <body>
 <canvas id="gameCanvas" width="400" height="600"></canvas>
-<audio id="shootSound" src="assets/shoot.wav"></audio>
-<audio id="explosionSound" src="assets/explosion.wav"></audio>
 <script>
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
-
-  const bg = new Image();
-  bg.src = "assets/bg.jpg";
-
-  const playerImg = new Image();
-  playerImg.src = "assets/player.png";
-
-  const enemyImg = new Image();
-  enemyImg.src = "assets/enemy.png";
-
-  const shootSound = document.getElementById("shootSound");
-  const explosionSound = document.getElementById("explosionSound");
 
   const plane = { x: 180, y: 500, w: 40, h: 40 };
   const bullets = [];
   const enemies = [];
   let score = 0;
-  let bgY = 0;
 
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft" && plane.x > 0) plane.x -= 20;
     if (e.key === "ArrowRight" && plane.x < canvas.width - plane.w) plane.x += 20;
     if (e.key === " " || e.key === "ArrowUp") {
       bullets.push({ x: plane.x + 18, y: plane.y });
-      shootSound.currentTime = 0;
-      shootSound.play();
     }
   });
 
-  function drawBackground() {
-    ctx.drawImage(bg, 0, bgY, canvas.width, canvas.height);
-    ctx.drawImage(bg, 0, bgY - canvas.height, canvas.width, canvas.height);
-    bgY += 2;
-    if (bgY >= canvas.height) bgY = 0;
-  }
-
   function drawPlane() {
-    ctx.drawImage(playerImg, plane.x, plane.y, plane.w, plane.h);
+    ctx.fillStyle = "white";
+    ctx.fillRect(plane.x, plane.y, plane.w, plane.h);
   }
 
   function drawBullets() {
@@ -64,12 +40,13 @@
   }
 
   function drawEnemies() {
+    ctx.fillStyle = "green";
     if (Math.random() < 0.02) {
       enemies.push({ x: Math.random() * 360, y: -40 });
     }
     for (let i = 0; i < enemies.length; i++) {
       enemies[i].y += 3;
-      ctx.drawImage(enemyImg, enemies[i].x, enemies[i].y, 40, 40);
+      ctx.fillRect(enemies[i].x, enemies[i].y, 40, 40);
     }
   }
 
@@ -81,8 +58,6 @@
         if (b.x < e.x + 40 && b.x + 4 > e.x && b.y < e.y + 40 && b.y + 10 > e.y) {
           enemies.splice(i, 1);
           bullets.splice(j, 1);
-          explosionSound.currentTime = 0;
-          explosionSound.play();
           score++;
           break;
         }
@@ -98,7 +73,6 @@
 
   function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBackground();
     drawPlane();
     drawBullets();
     drawEnemies();
