@@ -1,2 +1,0 @@
-# zerak
-plane arcade game 
