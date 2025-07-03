@@ -207,7 +207,7 @@ function drawBullets() {
   ctx.fillStyle = "red";
   bullets.forEach(b => {
     b.y -= canvas.height * 0.02;
-    ctx.fillRect(b.x, b.y, 4, 10);
+    ctx.fillRect(b.x, b.y, 40, 100);
   });
   bullets = bullets.filter(b => b.y > -10);
 }
