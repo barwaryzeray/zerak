@@ -21,7 +21,7 @@
     }
     #controls {
       position: fixed;
-      bottom: 0;
+      bottom: 15%; /* <-- moved higher */
       width: 100%;
       z-index: 10;
       display: flex;
@@ -103,9 +103,9 @@ const explosionSound = new Audio("explosion.mp3");
 // Game state
 let gameState = "start";
 
-// Scale factors
-let planeW = canvas.width * 0.1;
-let planeH = canvas.width * 0.1;
+// Scale factors (30%)
+let planeW = canvas.width * 0.3;
+let planeH = canvas.width * 0.3;
 
 // Player and game data
 let plane = { x: canvas.width / 2 - planeW / 2, y: canvas.height - planeH - 40, w: planeW, h: planeH };
@@ -192,16 +192,16 @@ function drawBullets() {
 
 function drawEnemies() {
   if (Math.random() < 0.02) {
-    enemies.push({ 
-      x: Math.random() * (canvas.width - plane.w), 
-      y: -plane.h 
+    enemies.push({
+      x: Math.random() * (canvas.width - planeW),
+      y: -planeH
     });
   }
   enemies.forEach(e => {
     e.y += canvas.height * 0.005;
-    ctx.drawImage(enemyImg, e.x, e.y, plane.w, plane.h);
+    ctx.drawImage(enemyImg, e.x, e.y, planeW, planeH);
   });
-  enemies = enemies.filter(e => e.y < canvas.height + plane.h);
+  enemies = enemies.filter(e => e.y < canvas.height + planeH);
 }
 
 function checkCollisions() {
@@ -210,9 +210,9 @@ function checkCollisions() {
       const e = enemies[i];
       const b = bullets[j];
       if (
-        b.x < e.x + plane.w &&
+        b.x < e.x + planeW &&
         b.x + 4 > e.x &&
-        b.y < e.y + plane.h &&
+        b.y < e.y + planeH &&
         b.y + 10 > e.y
       ) {
         enemies.splice(i, 1);
@@ -229,7 +229,7 @@ function checkCollisions() {
 
 function checkGameOver() {
   for (let e of enemies) {
-    if (e.y + plane.h >= plane.y) {
+    if (e.y + planeH >= plane.y) {
       gameState = "gameover";
       controls.style.display = "none";
       restartButton.style.display = "block";
