@@ -21,28 +21,45 @@
     }
     #controls {
       position: fixed;
-      bottom: 15%; /* <-- moved higher */
+      bottom: 15%; /* raised higher */
       width: 100%;
       z-index: 10;
       display: flex;
       justify-content: space-between;
-      padding: 10px;
+      padding: 10px 20px; /* horizontal padding */
       box-sizing: border-box;
+      pointer-events: auto;
     }
-    #controls .group {
+    #movementButtons {
       display: flex;
+      gap: 15px;
+      flex: 1;
+      max-width: 40%;
     }
-    #controls .group button,
+    #movementButtons button {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid #888;
+      color: white;
+      font-size: 48px; /* twice as big (was 24px) */
+      padding: 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      flex: 1;
+      user-select: none;
+      touch-action: manipulation;
+    }
     #shootBtn {
       background: rgba(255,255,255,0.2);
       border: 1px solid #888;
       color: white;
-      font-size: 24px;
-      padding: 20px;
-      margin: 0 5px;
-      border-radius: 8px;
+      font-size: 48px; /* twice as big */
+      padding: 40px;
+      border-radius: 12px;
       cursor: pointer;
-      flex: 1;
+      user-select: none;
+      touch-action: manipulation;
+      max-width: 25%;
+      flex-shrink: 0;
     }
     #startButton, #restartButton {
       position: fixed;
@@ -58,6 +75,8 @@
       cursor: pointer;
       z-index: 10;
       display: none;
+      user-select: none;
+      touch-action: manipulation;
     }
   </style>
 </head>
@@ -65,7 +84,7 @@
 <canvas id="gameCanvas"></canvas>
 
 <div id="controls">
-  <div class="group">
+  <div id="movementButtons">
     <button id="leftBtn">◀️</button>
     <button id="rightBtn">▶️</button>
   </div>
@@ -103,9 +122,9 @@ const explosionSound = new Audio("explosion.mp3");
 // Game state
 let gameState = "start";
 
-// Scale factors (30%)
-let planeW = canvas.width * 0.3;
-let planeH = canvas.width * 0.3;
+// Scale factors (15%)
+let planeW = canvas.width * 0.15;
+let planeH = canvas.width * 0.15;
 
 // Player and game data
 let plane = { x: canvas.width / 2 - planeW / 2, y: canvas.height - planeH - 40, w: planeW, h: planeH };
@@ -149,13 +168,16 @@ document.addEventListener("keydown", e => {
 });
 
 // Mobile controls
-document.getElementById("leftBtn").addEventListener("touchstart", () => {
+document.getElementById("leftBtn").addEventListener("touchstart", e => {
+  e.preventDefault(); // prevent scrolling
   if (gameState === "playing" && plane.x > 0) plane.x -= canvas.width * 0.1;
 });
-document.getElementById("rightBtn").addEventListener("touchstart", () => {
+document.getElementById("rightBtn").addEventListener("touchstart", e => {
+  e.preventDefault();
   if (gameState === "playing" && plane.x < canvas.width - plane.w) plane.x += canvas.width * 0.1;
 });
-document.getElementById("shootBtn").addEventListener("touchstart", () => {
+document.getElementById("shootBtn").addEventListener("touchstart", e => {
+  e.preventDefault();
   if (gameState === "playing") shoot();
 });
 
