@@ -21,38 +21,49 @@
     }
     #controls {
       position: fixed;
-      bottom: 15%; /* raised higher */
+      bottom: 15%;
       width: 100%;
       z-index: 10;
       display: flex;
       justify-content: space-between;
-      padding: 10px 20px; /* horizontal padding */
+      padding: 10px 20px;
       box-sizing: border-box;
       pointer-events: auto;
     }
-    #movementButtons {
-      display: flex;
-      gap: 15px;
-      flex: 1;
-      max-width: 40%;
+    /* ADJUSTED JOYSTICK POSITION (15% instead of 30%) */
+    #joystick-container {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      margin-left: 15%; /* Reduced from 30% to move halfway */
     }
-    #movementButtons button {
+    #joystick-base {
+      position: absolute;
+      width: 90px;
+      height: 90px;
       background: rgba(255,255,255,0.2);
-      border: 1px solid #888;
-      color: white;
-      font-size: 48px; /* twice as big (was 24px) */
-      padding: 40px;
-      border-radius: 12px;
-      cursor: pointer;
-      flex: 1;
-      user-select: none;
-      touch-action: manipulation;
+      border-radius: 50%;
+      top: 45px;
+      left: 45px;
+    }
+    #joystick {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      top: 60px;
+      left: 60px;
+      transition: transform 0.1s;
     }
     #shootBtn {
       background: rgba(255,255,255,0.2);
       border: 1px solid #888;
       color: white;
-      font-size: 48px; /* twice as big */
+      font-size: 48px;
       padding: 40px;
       border-radius: 12px;
       cursor: pointer;
@@ -78,21 +89,133 @@
       user-select: none;
       touch-action: manipulation;
     }
+    #mainMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .menu-title {
+      color: white;
+      font-size: 48px;
+      margin-bottom: 40px;
+    }
+    .menu-button {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid #888;
+      color: white;
+      font-size: 24px;
+      padding: 16px 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      min-width: 200px;
+      text-align: center;
+      user-select: none;
+    }
+    #settingsMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .settings-title {
+      color: white;
+      font-size: 36px;
+      margin-bottom: 30px;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid #888;
+      color: white;
+      font-size: 18px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .settings-option {
+      color: white;
+      font-size: 20px;
+      margin: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .settings-option select {
+      margin-left: 10px;
+      padding: 5px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid #888;
+    }
   </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
 
 <div id="controls">
-  <div id="movementButtons">
-    <button id="leftBtn">◀️</button>
-    <button id="rightBtn">▶️</button>
+  <div id="joystick-container">
+    <div id="joystick-base"></div>
+    <div id="joystick"></div>
   </div>
   <button id="shootBtn">🔫</button>
 </div>
 
 <button id="startButton">Start Game</button>
 <button id="restartButton">Restart Game</button>
+
+<div id="mainMenu">
+  <div class="menu-title">Plane Shooter</div>
+  <div class="menu-button" id="playButton">Play</div>
+  <div class="menu-button" id="settingsButton">Settings</div>
+  <div class="menu-button" id="pauseButton" style="display:none;">Pause Game</div>
+</div>
+
+<div id="settingsMenu">
+  <button class="back-button" id="backButton">← Back</button>
+  <div class="settings-title">Game Settings</div>
+  
+  <div class="settings-option">
+    Difficulty:
+    <select id="difficultySelect">
+      <option value="easy">Easy</option>
+      <option value="normal" selected>Normal</option>
+      <option value="hard">Hard</option>
+    </select>
+  </div>
+  
+  <div class="settings-option">
+    Controls:
+    <select id="controlsSelect">
+      <option value="buttons" selected>Buttons</option>
+      <option value="swipe">Swipe</option>
+    </select>
+  </div>
+  
+  <div class="settings-option">
+    Sound:
+    <select id="soundSelect">
+      <option value="on" selected>On</option>
+      <option value="off">Off</option>
+    </select>
+  </div>
+</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -115,19 +238,34 @@ enemyImg.src = "enemy.png";
 const bgImg = new Image();
 bgImg.src = "background.png";
 
+// Load bullet image
+const bulletImg = new Image();
+bulletImg.src = "bullet.png";
+
 // Load sounds
 const shootSound = new Audio("shoot.mp3");
 const explosionSound = new Audio("explosion.mp3");
 
 // Game state
-let gameState = "start";
+let gameState = "menu";
 
 // Scale factors (15%)
 let planeW = canvas.width * 0.15;
 let planeH = canvas.width * 0.15;
 
 // Player and game data
-let plane = { x: canvas.width / 2 - planeW / 2, y: canvas.height - planeH - 40, w: planeW, h: planeH };
+let plane = { 
+  x: canvas.width / 2 - planeW / 2, 
+  y: canvas.height - planeH - 40, 
+  w: planeW, 
+  h: planeH,
+  vx: 0,
+  ax: 0,
+  maxSpeed: canvas.width * 0.03,
+  acceleration: canvas.width * 0.001,
+  friction: 0.92
+};
+
 let bullets = [];
 let enemies = [];
 let score = 0;
@@ -137,17 +275,109 @@ const startButton = document.getElementById("startButton");
 const restartButton = document.getElementById("restartButton");
 const controls = document.getElementById("controls");
 
-// Show Start button initially
-startButton.style.display = "block";
-controls.style.display = "none";
-restartButton.style.display = "none";
+// Menu elements
+const mainMenu = document.getElementById("mainMenu");
+const playButton = document.getElementById("playButton");
+const settingsButton = document.getElementById("settingsButton");
+const settingsMenu = document.getElementById("settingsMenu");
+const backButton = document.getElementById("backButton");
 
-// Start game button
-startButton.addEventListener("click", () => {
+// Analog stick elements
+const joystick = document.getElementById("joystick");
+const joystickContainer = document.getElementById("joystick-container");
+let joystickActive = false;
+let joystickCenter = { x: 0, y: 0 };
+let joystickPosition = { x: 0, y: 0 };
+const maxJoystickDistance = 60;
+
+// Initialize joystick
+function initJoystick() {
+  const rect = joystickContainer.getBoundingClientRect();
+  joystickCenter = {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+  };
+  
+  // Touch events
+  joystickContainer.addEventListener("touchstart", handleJoystickStart);
+  document.addEventListener("touchmove", handleJoystickMove);
+  document.addEventListener("touchend", handleJoystickEnd);
+  
+  // Mouse events for desktop testing
+  joystickContainer.addEventListener("mousedown", handleJoystickStart);
+  document.addEventListener("mousemove", handleJoystickMove);
+  document.addEventListener("mouseup", handleJoystickEnd);
+}
+
+// Joystick handlers
+function handleJoystickStart(e) {
+  e.preventDefault();
+  joystickActive = true;
+  updateJoystickPosition(e);
+}
+
+function handleJoystickMove(e) {
+  if (!joystickActive) return;
+  e.preventDefault();
+  updateJoystickPosition(e);
+}
+
+function handleJoystickEnd(e) {
+  joystickActive = false;
+  joystick.style.transform = "translate(0, 0)";
+  plane.ax = 0;
+}
+
+function updateJoystickPosition(e) {
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  
+  // Calculate joystick position relative to center
+  const dx = clientX - joystickCenter.x;
+  const dy = clientY - joystickCenter.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const angle = Math.atan2(dy, dx);
+  
+  // Limit joystick movement
+  const limitedDistance = Math.min(distance, maxJoystickDistance);
+  joystickPosition = {
+    x: Math.cos(angle) * limitedDistance,
+    y: Math.sin(angle) * limitedDistance
+  };
+  
+  // Update joystick visual position
+  joystick.style.transform = `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`;
+  
+  // Update plane movement based on joystick position
+  const normalizedX = joystickPosition.x / maxJoystickDistance;
+  plane.ax = normalizedX * plane.acceleration;
+}
+
+// Menu button handlers
+playButton.addEventListener("click", () => {
+  mainMenu.style.display = "none";
   gameState = "playing";
-  startButton.style.display = "none";
   controls.style.display = "flex";
 });
+
+settingsButton.addEventListener("click", () => {
+  mainMenu.style.display = "none";
+  settingsMenu.style.display = "flex";
+});
+
+backButton.addEventListener("click", () => {
+  settingsMenu.style.display = "none";
+  mainMenu.style.display = "flex";
+});
+
+// Show menu initially
+mainMenu.style.display = "flex";
+controls.style.display = "none";
+startButton.style.display = "none";
+restartButton.style.display = "none";
+
+// Initialize joystick
+initJoystick();
 
 // Restart game button
 restartButton.addEventListener("click", () => {
@@ -157,39 +387,75 @@ restartButton.addEventListener("click", () => {
   controls.style.display = "flex";
 });
 
-// Keyboard controls
+// Keyboard controls (optional fallback)
 document.addEventListener("keydown", e => {
   if (gameState === "playing") {
-    let step = canvas.width * 0.1;
-    if (e.key === "ArrowLeft" && plane.x > 0) plane.x -= step;
-    if (e.key === "ArrowRight" && plane.x < canvas.width - plane.w) plane.x += step;
+    if (e.key === "ArrowLeft") plane.ax = -plane.acceleration;
+    if (e.key === "ArrowRight") plane.ax = plane.acceleration;
     if (e.key === " " || e.key === "ArrowUp") shoot();
   }
 });
 
-// Mobile controls
-document.getElementById("leftBtn").addEventListener("touchstart", e => {
-  e.preventDefault(); // prevent scrolling
-  if (gameState === "playing" && plane.x > 0) plane.x -= canvas.width * 0.1;
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    plane.ax = 0;
+  }
 });
-document.getElementById("rightBtn").addEventListener("touchstart", e => {
-  e.preventDefault();
-  if (gameState === "playing" && plane.x < canvas.width - plane.w) plane.x += canvas.width * 0.1;
-});
+
+// Shoot button
 document.getElementById("shootBtn").addEventListener("touchstart", e => {
   e.preventDefault();
   if (gameState === "playing") shoot();
 });
 
+document.getElementById("shootBtn").addEventListener("mousedown", e => {
+  e.preventDefault();
+  if (gameState === "playing") shoot();
+});
+
+function updateMovement() {
+  plane.vx += plane.ax;
+  plane.vx *= plane.friction;
+  if (Math.abs(plane.vx) > plane.maxSpeed) {
+    plane.vx = plane.maxSpeed * Math.sign(plane.vx);
+  }
+  plane.x += plane.vx;
+  if (plane.x < 0) {
+    plane.x = 0;
+    plane.vx = 0;
+  }
+  if (plane.x > canvas.width - plane.w) {
+    plane.x = canvas.width - plane.w;
+    plane.vx = 0;
+  }
+}
+
 function shoot() {
-  bullets.push({ x: plane.x + plane.w / 2 - 2, y: plane.y });
-  shootSound.pause();
-  shootSound.currentTime = 0;
-  shootSound.play().catch(err => console.log("Shoot sound error:", err));
+  bullets.push({ 
+    x: plane.x + plane.w / 2 - 40,
+    y: plane.y,
+    width: 80,
+    height: 200
+  });
+  if (soundSelect.value === "on") {
+    shootSound.pause();
+    shootSound.currentTime = 0;
+    shootSound.play().catch(err => console.log("Shoot sound error:", err));
+  }
 }
 
 function resetGame() {
-  plane = { x: canvas.width / 2 - plane.w / 2, y: canvas.height - plane.h - 40, w: plane.w, h: plane.h };
+  plane = { 
+    x: canvas.width / 2 - planeW / 2, 
+    y: canvas.height - planeH - 40, 
+    w: planeW, 
+    h: planeH,
+    vx: 0,
+    ax: 0,
+    maxSpeed: canvas.width * 0.03,
+    acceleration: canvas.width * 0.001,
+    friction: 0.92
+  };
   bullets = [];
   enemies = [];
   score = 0;
@@ -204,23 +470,36 @@ function drawPlane() {
 }
 
 function drawBullets() {
-  ctx.fillStyle = "red";
   bullets.forEach(b => {
     b.y -= canvas.height * 0.02;
-    ctx.fillRect(b.x, b.y, 40, 100);
+    if (bulletImg.complete && bulletImg.naturalHeight !== 0) {
+      ctx.drawImage(bulletImg, b.x, b.y, b.width, b.height);
+    } else {
+      ctx.fillStyle = "red";
+      ctx.fillRect(b.x, b.y, b.width, b.height);
+    }
   });
-  bullets = bullets.filter(b => b.y > -10);
+  bullets = bullets.filter(b => b.y > -b.height);
 }
 
 function drawEnemies() {
-  if (Math.random() < 0.02) {
+  let spawnRate = 0.02;
+  if (difficultySelect.value === "easy") spawnRate = 0.015;
+  else if (difficultySelect.value === "hard") spawnRate = 0.03;
+  
+  if (Math.random() < spawnRate) {
     enemies.push({
       x: Math.random() * (canvas.width - planeW),
       y: -planeH
     });
   }
+  
   enemies.forEach(e => {
-    e.y += canvas.height * 0.005;
+    let speed = canvas.height * 0.005;
+    if (difficultySelect.value === "easy") speed = canvas.height * 0.003;
+    else if (difficultySelect.value === "hard") speed = canvas.height * 0.008;
+    
+    e.y += speed;
     ctx.drawImage(enemyImg, e.x, e.y, planeW, planeH);
   });
   enemies = enemies.filter(e => e.y < canvas.height + planeH);
@@ -233,16 +512,18 @@ function checkCollisions() {
       const b = bullets[j];
       if (
         b.x < e.x + planeW &&
-        b.x + 4 > e.x &&
+        b.x + b.width > e.x &&
         b.y < e.y + planeH &&
-        b.y + 10 > e.y
+        b.y + b.height > e.y
       ) {
         enemies.splice(i, 1);
         bullets.splice(j, 1);
         score++;
-        explosionSound.pause();
-        explosionSound.currentTime = 0;
-        explosionSound.play().catch(err => console.log("Explosion sound error:", err));
+        if (soundSelect.value === "on") {
+          explosionSound.pause();
+          explosionSound.currentTime = 0;
+          explosionSound.play().catch(err => console.log("Explosion sound error:", err));
+        }
         break;
       }
     }
@@ -265,13 +546,8 @@ function drawScore() {
   ctx.fillText("Score: " + score, 10, 30);
 }
 
-function drawStartScreen() {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "white";
-  ctx.font = "28px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("Arcade Plane Shooter", canvas.width / 2, canvas.height / 2);
+function drawMenu() {
+  // Menu is handled by HTML/CSS
 }
 
 function drawGameOver() {
@@ -286,10 +562,27 @@ function drawGameOver() {
   ctx.fillText("Score: " + score, canvas.width / 2, canvas.height / 2 + 20);
 }
 
+const pauseButton = document.getElementById("pauseButton");
+
+function updatePauseButton() {
+  pauseButton.style.display = (gameState === "playing" || gameState === "paused") ? "block" : "none";
+}
+
+pauseButton.addEventListener("click", function() {
+  if(gameState === "playing") {
+    gameState = "paused";
+    this.textContent = "Resume Game";
+  } else if(gameState === "paused") {
+    gameState = "playing";
+    this.textContent = "Pause Game";
+  }
+});
+
 function gameLoop() {
-  if (gameState === "start") {
-    drawStartScreen();
+  if (gameState === "menu") {
+    drawBackground();
   } else if (gameState === "playing") {
+    updateMovement();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
     drawPlane();
