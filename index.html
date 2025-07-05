@@ -40,12 +40,12 @@
       cursor: pointer;
       user-select: none;
       touch-action: manipulation;
-      width: 80px;
-      height: 80px;
+      width: 160px;
+      height: 160px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 10px;
+      margin: 0 20px;
     }
     #leftBtn {
       margin-left: 15%;
@@ -237,8 +237,11 @@ const bulletImg = new Image();
 bulletImg.src = "bullet.png";
 
 // Load sounds
-const shootSound = new Audio("shoot.mp3");
-const explosionSound = new Audio("explosion.mp3");
+const shootSound = new Audio("sounds/shoot.mp3");
+const explosionSound = new Audio("sounds/explosion.mp3");
+const backgroundMusic = new Audio("sounds/background_music.mp3");
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.5; // Lower volume for background music
 
 // Game state
 let gameState = "menu";
@@ -279,6 +282,17 @@ const backButton = document.getElementById("backButton");
 // Arrow buttons
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
+
+// Sound controls
+const soundSelect = document.getElementById("soundSelect");
+
+function toggleBackgroundMusic() {
+  if (soundSelect.value === "on") {
+    backgroundMusic.play().catch(err => console.log("Background music error:", err));
+  } else {
+    backgroundMusic.pause();
+  }
+}
 
 // Arrow button event listeners
 leftBtn.addEventListener("touchstart", (e) => {
@@ -322,6 +336,7 @@ playButton.addEventListener("click", () => {
   mainMenu.style.display = "none";
   gameState = "playing";
   controls.style.display = "flex";
+  toggleBackgroundMusic();
 });
 
 settingsButton.addEventListener("click", () => {
@@ -333,6 +348,9 @@ backButton.addEventListener("click", () => {
   settingsMenu.style.display = "none";
   mainMenu.style.display = "flex";
 });
+
+// Sound setting change handler
+soundSelect.addEventListener("change", toggleBackgroundMusic);
 
 // Show menu initially
 mainMenu.style.display = "flex";
@@ -346,6 +364,7 @@ restartButton.addEventListener("click", () => {
   gameState = "playing";
   restartButton.style.display = "none";
   controls.style.display = "flex";
+  toggleBackgroundMusic();
 });
 
 // Keyboard controls (optional fallback)
@@ -497,6 +516,7 @@ function checkGameOver() {
       gameState = "gameover";
       controls.style.display = "none";
       restartButton.style.display = "block";
+      backgroundMusic.pause();
     }
   }
 }
@@ -533,9 +553,13 @@ pauseButton.addEventListener("click", function() {
   if(gameState === "playing") {
     gameState = "paused";
     this.textContent = "Resume Game";
+    backgroundMusic.pause();
   } else if(gameState === "paused") {
     gameState = "playing";
     this.textContent = "Pause Game";
+    if (soundSelect.value === "on") {
+      backgroundMusic.play().catch(err => console.log("Background music error:", err));
+    }
   }
 });
 
