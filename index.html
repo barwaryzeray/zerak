@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Plane Shooter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header hidden" id="gameHeader">
+            <h1>Arcade Plane Shooter</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">Score:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Lives:</span>
+                    <span id="lives">3</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Level:</span>
+                    <span id="level">1</span>
+                </div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="game-controls hidden" id="gameControls">
+            <div class="instructions">
+                <p><strong>Controls:</strong></p>
+                <p>WASD or Arrow Keys - Move</p>
+                <p>Spacebar - Shoot</p>
+                <p>ESC or Menu Button - Toggle Menu</p>
+            </div>
+            <button id="startBtn" class="game-btn">Start Game</button>
+            <button id="pauseBtn" class="game-btn">Pause</button>
+            <button id="restartBtn" class="game-btn">Restart</button>
+        </div>
+        
+        <!-- Floating Menu Button -->
+        <button id="menuButton" class="menu-button" title="Toggle Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+            </svg>
+        </button>
+        
+        <!-- Mobile Controls -->
+        <div class="mobile-controls" id="mobileControls">
+            <!-- Virtual Joystick -->
+            <div class="joystick-container">
+                <div class="joystick-base" id="joystickBase">
+                    <div class="joystick-stick" id="joystickStick"></div>
+                </div>
+            </div>
+            
+            <!-- Fire Button -->
+            <div class="fire-button-container">
+                <button class="fire-button" id="fireButton">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="gameOverScreen" class="overlay hidden">
+        <div class="modal">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="playAgainBtn" class="game-btn">Play Again</button>
+        </div>
+    </div>
+    
+    <div id="pauseScreen" class="overlay hidden">
+        <div class="modal">
+            <h2>Game Paused</h2>
+            <p>Press P to resume</p>
+        </div>
+    </div>
+    
+    <script src="js/game.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/bullet.js"></script>
+    <script src="js/explosion.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
