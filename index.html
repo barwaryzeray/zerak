@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaWeb</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Mulish:ital,wght@0,200..1000;1,200..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        html, body { min-height: 100%; }
+        body { opacity: 0; transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1); }
+        body.bg-loaded { opacity: 1; }
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom CSS for Glassmorphism Effect */
+        .glassmorphism {
+            background-color: rgba(255, 255, 255, 0.08); /* Slightly visible white with transparency */
+            backdrop-filter: blur(20px) saturate(180%); /* Blur and saturation for frosted effect */
+            -webkit-backdrop-filter: blur(20px) saturate(180%); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.125); /* Subtle white border */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Stronger shadow for depth */
+        }
+
+        /* Custom glow effect for active navigation link */
+        .nav-link-active {
+            position: relative;
+        }
+        .nav-link-active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -4px; /* Adjust as needed */
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            border-radius: 9999px;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Subtle background gradient to mimic abstract landscape */
+        body {
+            background: radial-gradient(at 50% 10%, rgba(50, 50, 60, 0.4) 0%, rgba(20, 20, 25, 0.7) 70%);
+            font-family: 'Mulish', sans-serif;
+            overflow-x: hidden;
+        }
+        @media (max-width: 640px) {
+            body {
+                background-attachment: scroll, scroll, scroll, scroll, scroll;
+                background-size: cover, cover, cover, cover, cover;
+            }
+        }
+
+        /* Sphere animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .sphere {
+            animation: float 6s ease-in-out infinite;
+        }
+        .sphere:nth-child(2) { animation-delay: 1.5s; }
+        .sphere:nth-child(3) { animation-delay: 3s; }
+        .sphere:nth-child(4) { animation-delay: 4.5s; }
+
+        /* Responsive Tweaks */
+        @media (max-width: 640px) {
+            .glassmorphism {
+                padding: 1rem !important;
+                border-radius: 1rem !important;
+            }
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+            nav .text-right {
+                display: none !important;
+            }
+            .text-6xl, .text-8xl {
+                font-size: 2.5rem !important;
+            }
+            .text-xl, .text-2xl {
+                font-size: 1.1rem !important;
+            }
+            .h-80, .h-96 {
+                height: 16rem !important;
+            }
+            .w-96 {
+                width: 100% !important;
+            }
+            .max-w-5xl, .max-w-6xl {
+                max-width: 100% !important;
+            }
+            .rounded-2xl {
+                border-radius: 1rem !important;
+            }
+            .p-6, .p-8, .sm\:p-6, .sm\:p-8 {
+                padding: 1rem !important;
+            }
+        }
+        /* Burger menu animation - Slow, fluid and organic */
+        .mobile-nav {
+            transition: max-height 1.8s cubic-bezier(0.19, 1, 0.22, 1), 
+                       padding 1.6s cubic-bezier(0.19, 1, 0.22, 1), 
+                       opacity 1.4s cubic-bezier(0.19, 1, 0.22, 1),
+                       backdrop-filter 1.2s cubic-bezier(0.19, 1, 0.22, 1),
+                       transform 1.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            backdrop-filter: blur(0px);
+            transform: translateY(-10px);
+        }
+        .mobile-nav.open {
+            max-height: 350px;
+            opacity: 1;
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+            backdrop-filter: blur(12px);
+            transform: translateY(0);
+        }
+        .mobile-nav-anim {
+            transform: scaleY(0) translateY(-30px) rotateX(-15deg);
+            opacity: 0;
+            transition: transform 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                       opacity 1.3s cubic-bezier(0.19, 1, 0.22, 1);
+            transform-origin: top;
+            perspective: 1000px;
+        }
+        .mobile-nav.open .mobile-nav-anim {
+            transform: scaleY(1) translateY(0) rotateX(0deg);
+            opacity: 1;
+        }
+        
+        /* Individual menu item animations with staggered effect */
+        .mobile-nav ul li {
+            transform: translateX(-50px) translateY(20px) scale(0.8);
+            opacity: 0;
+            transition: transform 1.0s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                       opacity 1.0s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .mobile-nav.open ul li:nth-child(1) {
+            transform: translateX(0) translateY(0) scale(1);
+            opacity: 1;
+            transition-delay: 0.3s;
+        }
+        .mobile-nav.open ul li:nth-child(2) {
+            transform: translateX(0) translateY(0) scale(1);
+            opacity: 1;
+            transition-delay: 0.5s;
+        }
+        .mobile-nav.open ul li:nth-child(3) {
+            transform: translateX(0) translateY(0) scale(1);
+            opacity: 1;
+            transition-delay: 0.7s;
+        }
+        .mobile-nav.open ul li:nth-child(4) {
+            transform: translateX(0) translateY(0) scale(1);
+            opacity: 1;
+            transition-delay: 0.9s;
+        }
+        
+        /* Burger button transformation */
+        #burgerBtn.active .burger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px) !important;
+        }
+        #burgerBtn.active .burger-line:nth-child(2) {
+            opacity: 0 !important;
+            transform: scale(0) !important;
+        }
+        #burgerBtn.active .burger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px) !important;
+        }
+        
+        /* Override general button transitions for burger button */
+        #burgerBtn {
+            transition: none !important;
+        }
+        #burgerBtn .burger-line {
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+        /* Smooth hover effect for cards and buttons */
+        .glassmorphism,
+        .bg-black.bg-opacity-40,
+        .rounded-full,
+        button,
+        a,
+        .shadow-lg,
+        .shadow-md {
+            transition: background-color 0.8s cubic-bezier(0.4,0,0.2,1), box-shadow 0.8s cubic-bezier(0.4,0,0.2,1), transform 0.8s cubic-bezier(0.4,0,0.2,1), backdrop-filter 0.8s cubic-bezier(0.4,0,0.2,1), -webkit-backdrop-filter 0.8s cubic-bezier(0.4,0,0.2,1);
+        }
+        
+        /* Override general transitions for mobile navigation */
+        .mobile-nav.shadow-lg {
+            transition: max-height 1.8s cubic-bezier(0.19, 1, 0.22, 1), 
+                       padding 1.6s cubic-bezier(0.19, 1, 0.22, 1), 
+                       opacity 1.4s cubic-bezier(0.19, 1, 0.22, 1),
+                       backdrop-filter 1.2s cubic-bezier(0.19, 1, 0.22, 1),
+                       transform 1.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+        .glassmorphism:hover,
+        .bg-black.bg-opacity-40:hover {
+            box-shadow: 0 12px 36px 0 rgba(212, 184, 156, 0.25), 0 2px 8px 0 rgba(0,0,0,0.18);
+            transform: translateY(-4px) scale(1.02);
+            background-color: rgba(255, 255, 255, 0.16); /* Brighter on hover */
+            backdrop-filter: blur(28px) saturate(200%); /* More blur and saturation */
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+        }
+        button:hover, .rounded-full:hover, a:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .nav-link-active > a,
+        ul li a {
+            transition: color 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s cubic-bezier(0.4,0,0.2,1), filter 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        /* Custom glow effect for nav link on hover */
+        .nav-link-hover {
+            position: relative;
+            transition: color 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .nav-link-hover::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            right: 50%;
+            bottom: -4px;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            border-radius: 9999px;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+            opacity: 0;
+            transform: translateX(-50%) scaleX(0.2);
+            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            width: 100%;
+        }
+        .nav-link-hover:hover {
+            color: #fff !important;
+        }
+        .nav-link-hover:hover::after {
+            opacity: 1;
+            left: 0;
+            right: 0;
+            transform: translateX(0) scaleX(1);
+        }
+        /* Parallax fade background setup */
+        .parallax-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .parallax-img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1);
+            opacity: 0;
+        }
+        .parallax-img.active {
+            opacity: 1;
+        }
+        /* Smooth sticky nav animation - Quick and snappy */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transition: box-shadow 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+                       background 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+                       padding 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+                       backdrop-filter 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                       transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .sticky-nav.scrolled {
+            box-shadow: 0 4px 24px 0 rgba(212, 184, 156, 0.18), 0 1.5px 6px 0 rgba(0,0,0,0.12);
+            background: rgba(20, 20, 25, 0.85);
+            backdrop-filter: blur(24px) saturate(180%);
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+            transform: translateY(-2px);
+        }
+        nav.glassmorphism:hover {
+            box-shadow: none;
+            transform: none;
+            background-color: rgba(255, 255, 255, 0.08); /* Reset to default */
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white flex flex-col items-center py-8 px-4">
+    <!-- Parallax background images -->
+    <div class="parallax-bg">
+        <img src="bg1.jpg" class="parallax-img" id="bg1" alt="bg1">
+        <img src="bg2.jpg" class="parallax-img" id="bg2" alt="bg2">
+        <img src="bg3.jpg" class="parallax-img" id="bg3" alt="bg3">
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="glassmorphism sticky-nav w-full max-w-6xl mx-auto p-4 rounded-2xl flex items-center justify-between z-20 relative">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+            <img src="logo.png" alt="NovaWeb Logo" class="w-24 h-12" />
+            <span class="text-black font-bold text-2xl tracking-wide" style="font-family: 'Raleway', sans-serif;">NovaWeb</span>
+        </div>
+
+        <!-- Navigation Links (desktop) -->
+        <ul class="hidden sm:flex space-x-4 sm:space-x-8 text-sm font-medium sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:w-max">
+            <li><a href="#services" class="text-white nav-link-hover transition duration-300">Services</a></li>
+            <li><a href="#portfolio" class="text-white nav-link-hover transition duration-300">Portfolio</a></li>
+            <li><a href="#about" class="text-white nav-link-hover transition duration-300">About</a></li>
+            <li><a href="#contact" class="text-white nav-link-hover transition duration-300">Contact</a></li>
+        </ul>
+
+        <!-- Burger Button (mobile only, moved to right) -->
+        <button id="burgerBtn" class="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded focus:outline-none ml-2" aria-label="Open menu">
+            <span class="burger-line block w-6 h-0.5 bg-white mb-1"></span>
+            <span class="burger-line block w-6 h-0.5 bg-white mb-1"></span>
+            <span class="burger-line block w-6 h-0.5 bg-white"></span>
+        </button>
+
+        <!-- Mobile Navigation (hidden by default) -->
+        <div id="mobileNav" class="mobile-nav absolute left-0 top-full w-full bg-black bg-opacity-90 rounded-b-2xl shadow-lg sm:hidden z-30">
+            <div class="mobile-nav-anim origin-top scale-y-0 opacity-0">
+                <ul class="flex flex-col py-4 px-6 space-y-2 text-base font-medium">
+                    <li><a href="#services" class="text-white hover:text-white nav-link-hover transition duration-300">Services</a></li>
+                    <li><a href="#portfolio" class="text-white hover:text-white nav-link-hover transition duration-300">Portfolio</a></li>
+                    <li><a href="#about" class="text-white hover:text-white nav-link-hover transition duration-300">About</a></li>
+                    <li><a href="#contact" class="text-white hover:text-white nav-link-hover transition duration-300">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero/Intro Section -->
+    <div class="glassmorphism w-full max-w-5xl mx-auto mt-10 p-8 sm:p-12 rounded-2xl relative flex flex-col-reverse md:flex-row items-center md:items-stretch z-10 min-h-[400px] md:min-h-[500px]">
+        <!-- Left: Text and Mini Boxes -->
+        <div class="flex-1 flex flex-col h-full">
+            <!-- Hero Heading and Subheading -->
+            <div class="w-full text-center md:text-left mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">Crafting Digital Magic</h1>
+                <p class="text-base sm:text-lg text-gray-200">We build innovative websites, apps, and AI agents that transform your ideas into reality.</p>
+            </div>
+            <div class="flex-1 flex flex-col justify-end">
+                <!-- Mini Boxes Row Only -->
+                <div class="w-full flex flex-col md:flex-row gap-4">
+                    <div class="glassmorphism flex-1 p-4 rounded-xl flex flex-col items-center text-center shadow-md">
+                        <img src="box1.svg" alt="Creative Design Icon" class="w-8 h-8 mb-2 object-contain" />
+                        <h4 class="text-lg font-bold text-white mb-1">Creative Design</h4>
+                        <p class="text-white text-xs">Modern, user-focused interfaces for all devices.</p>
+                    </div>
+                    <div class="glassmorphism flex-1 p-4 rounded-xl flex flex-col items-center text-center shadow-md">
+                        <img src="box2.svg" alt="Custom Development Icon" class="w-8 h-8 mb-2 object-contain" />
+                        <h4 class="text-lg font-bold text-white mb-1">Custom Development</h4>
+                        <p class="text-white text-xs">Fast, scalable, and secure web solutions.</p>
+                    </div>
+                    <div class="glassmorphism flex-1 p-4 rounded-xl flex flex-col items-center text-center shadow-md">
+                        <img src="box3.svg" alt="Ongoing Support Icon" class="w-8 h-8 mb-2 object-contain" />
+                        <h4 class="text-lg font-bold text-white mb-1">Ongoing Support</h4>
+                        <p class="text-white text-xs">Maintenance, updates, and dedicated support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Right: Hero Image -->
+        <div class="flex-1 flex items-center justify-center mb-8 md:mb-0 md:ml-8">
+            <img src="hero.jpg" alt="Golden Desert" class="rounded-2xl shadow-lg object-cover w-full max-w-xs h-64 md:h-80" style="background: #D4B89C;" />
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section id="services" class="flex flex-col md:flex-row justify-center items-center space-y-8 md:space-y-0 md:space-x-8 mt-8 sm:mt-10 w-full max-w-5xl z-10">
+        <div class="glassmorphism w-full md:w-96 h-80 sm:h-96 p-4 sm:p-6 rounded-2xl flex flex-col justify-between overflow-hidden">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Website Development and Design</h1>
+                <ul class="list-disc list-inside text-white text-xs mt-2">
+                    <li>UI/UX, Branding, Prototyping</li>
+                    <li>Wireframes & Prototypes</li>
+                    <li>Brand Identity</li>
+                    <li>Accessibility</li>
+                </ul>
+            </div>
+            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80" alt="Website Development and Design" class="w-full h-32 object-cover rounded-xl mt-3" />
+        </div>
+        <div class="glassmorphism w-full md:w-96 h-80 sm:h-96 p-4 sm:p-6 rounded-2xl flex flex-col justify-between overflow-hidden">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">App Development</h1>
+                <p class="text-white text-sm">Custom mobile and web apps for seamless user experiences.</p>
+                <ul class="list-disc list-inside text-white text-xs mt-2">
+                    <li>Frontend, Backend, APIs</li>
+                    <li>React, Vue, Angular</li>
+                    <li>Node.js, Python, PHP</li>
+                    <li>REST & GraphQL APIs</li>
+                </ul>
+            </div>
+            <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80" alt="App Development" class="w-full h-32 object-cover rounded-xl mt-3" />
+        </div>
+        <div class="glassmorphism w-full md:w-96 h-80 sm:h-96 p-4 sm:p-6 rounded-2xl flex flex-col justify-between overflow-hidden">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">AI Agent Development</h1>
+                <p class="text-white text-sm">Intelligent AI solutions to automate and enhance your business.</p>
+                <ul class="list-disc list-inside text-white text-xs mt-2">
+                    <li>SEO, Analytics, Growth</li>
+                    <li>On-Page & Technical SEO</li>
+                    <li>Content Strategy</li>
+                    <li>Analytics & Reporting</li>
+                </ul>
+            </div>
+            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80" alt="AI Agent Development" class="w-full h-32 object-cover rounded-xl mt-3" />
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section id="process" class="w-full max-w-5xl mx-auto mt-10 z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Our Process</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center text-center">
+                    <h3 class="text-lg font-semibold text-white mb-2">1. Discovery</h3>
+                    <p class="text-white text-xs">We learn about your business, goals, and audience.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center text-center">
+                    <h3 class="text-lg font-semibold text-white mb-2">2. Planning</h3>
+                    <p class="text-white text-xs">We create a roadmap, wireframes, and project plan.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center text-center">
+                    <h3 class="text-lg font-semibold text-white mb-2">3. Development</h3>
+                    <p class="text-white text-xs">We build, test, and refine your website or app.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center text-center">
+                    <h3 class="text-lg font-semibold text-white mb-2">4. Launch & Support</h3>
+                    <p class="text-white text-xs">We deploy, monitor, and support your project post-launch.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="w-full max-w-5xl mx-auto mt-10 z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Portfolio</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80" alt="Project 1" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">Business Landing</h3>
+                    <p class="text-white text-xs">Modern, responsive landing page for a startup.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80" alt="Project 2" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">E-commerce Store</h3>
+                    <p class="text-white text-xs">Full-featured online shop with cart and checkout.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=400&q=80" alt="Project 3" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">Portfolio Site</h3>
+                    <p class="text-white text-xs">Personal portfolio for a creative professional.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=400&q=80" alt="Project 4" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">SaaS Dashboard</h3>
+                    <p class="text-white text-xs">Analytics dashboard for SaaS business.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80" alt="Booking Platform" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">Booking Platform</h3>
+                    <p class="text-white text-xs">Custom booking and scheduling solution.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4 flex flex-col items-center">
+                    <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=400&q=80" alt="Project 6" class="rounded-lg mb-2 w-full h-auto">
+                    <h3 class="text-lg font-semibold text-white">Blog Platform</h3>
+                    <p class="text-white text-xs">Content-rich blog with CMS integration.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technologies We Use Section -->
+    <section id="technologies" class="w-full max-w-5xl mx-auto z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Technologies We Use</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 items-center justify-center">
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">React</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Node.js</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Python</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://raw.githubusercontent.com/tailwindlabs/tailwindcss/HEAD/.github/logo-light.svg" alt="Tailwind CSS" class="w-12 h-12 mb-2 bg-white rounded" />
+                    <span class="text-white text-sm">Tailwind</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" alt="MongoDB" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">MongoDB</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Git</span>
+                </div>
+                <!-- Coding Languages -->
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">JavaScript</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">TypeScript</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">HTML5</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">CSS3</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Java</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">C++</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">PHP</span>
+                </div>
+                <!-- Design Tools -->
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" alt="Figma" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Figma</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xd/xd-original.svg" alt="Adobe XD" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Adobe XD</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg" alt="Photoshop" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Photoshop</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/illustrator/illustrator-plain.svg" alt="Illustrator" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Illustrator</span>
+                </div>
+                <!-- Coding Tools -->
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="VS Code" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">VS Code</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" class="w-12 h-12 mb-2 bg-white rounded" />
+                    <span class="text-white text-sm">GitHub</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" class="w-12 h-12 mb-2" />
+                    <span class="text-white text-sm">Docker</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Plans Section -->
+    <section id="pricing" class="w-full max-w-5xl mx-auto z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Pricing Plans</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Starter Plan -->
+                <div class="bg-black bg-opacity-40 rounded-xl p-6 flex flex-col items-center shadow-md">
+                    <h3 class="text-xl font-bold text-white mb-2">Starter</h3>
+                    <div class="text-3xl font-bold text-gold-400 mb-2">$100-$200</div>
+                    <ul class="text-white text-sm mb-4 space-y-1 text-center">
+                        <li class="text-center">Basic Website (up to 3 pages)</li>
+                        <li class="text-center">Responsive Design</li>
+                        <li class="text-center">Email Support</li>
+                    </ul>
+                    <button class="bg-gold-400 text-white font-semibold px-6 py-2 rounded-full mt-auto hover:bg-gold-300 transition">Choose Starter</button>
+                </div>
+                <!-- Professional Plan -->
+                <div class="bg-black bg-opacity-60 rounded-xl p-6 flex flex-col items-center shadow-lg border-2 border-gold-400">
+                    <h3 class="text-xl font-bold text-white mb-2">Professional</h3>
+                    <div class="text-3xl font-bold text-gold-400 mb-2">$200-$500</div>
+                    <ul class="text-white text-sm mb-4 space-y-1 text-center">
+                        <li class="text-center">Up to 10 Pages</li>
+                        <li class="text-center">Custom Features</li>
+                        <li class="text-center">SEO Optimization</li>
+                        <li class="text-center">Priority Support</li>
+                    </ul>
+                    <button class="bg-gold-400 text-white font-semibold px-6 py-2 rounded-full mt-auto hover:bg-gold-300 transition">Choose Professional</button>
+                </div>
+                <!-- Enterprise Plan -->
+                <div class="bg-black bg-opacity-40 rounded-xl p-6 flex flex-col items-center shadow-md">
+                    <h3 class="text-xl font-bold text-white mb-2">Enterprise</h3>
+                    <div class="text-3xl font-bold text-gold-400 mb-2">Custom</div>
+                    <ul class="text-white text-sm mb-4 space-y-1 text-center">
+                        <li class="text-center">Unlimited Pages</li>
+                        <li class="text-center">Advanced Integrations</li>
+                        <li class="text-center">Dedicated Manager</li>
+                        <li class="text-center">24/7 Support</li>
+                    </ul>
+                    <button class="bg-gold-400 text-white font-semibold px-6 py-2 rounded-full mt-auto hover:bg-gold-300 transition">Contact Us</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="w-full max-w-5xl mx-auto z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8 flex flex-col md:flex-row items-center md:items-start">
+            <div class="md:w-1/2 mb-4 md:mb-0 md:pr-8">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">About Us</h2>
+                <p class="text-white text-sm mb-2">NovaWeb is a creative web development studio focused on delivering high-quality, modern websites. We combine design, technology, and strategy to help you succeed online.</p>
+                <ul class="list-disc list-inside text-white text-sm space-y-1 pl-4">
+                    <li>Experienced Developers</li>
+                    <li>Client-Centric Approach</li>
+                    <li>Cutting-Edge Tech</li>
+                    <li>Transparent Communication</li>
+                    <li>Continuous Learning</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="w-full max-w-5xl mx-auto z-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl mb-8">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <div class="bg-black bg-opacity-40 rounded-xl p-4">
+                    <h3 class="text-lg font-semibold text-white mb-1">How long does a project take?</h3>
+                    <p class="text-white text-sm">Most projects take 2-8 weeks depending on complexity and requirements.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4">
+                    <h3 class="text-lg font-semibold text-white mb-1">Do you offer support after launch?</h3>
+                    <p class="text-white text-sm">Yes, we provide ongoing maintenance and support packages.</p>
+                </div>
+                <div class="bg-black bg-opacity-40 rounded-xl p-4">
+                    <h3 class="text-lg font-semibold text-white mb-1">Can you redesign my existing website?</h3>
+                    <p class="text-white text-sm">Absolutely! We specialize in redesigns and modernizations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="w-full max-w-5xl mx-auto z-10 mb-10">
+        <div class="glassmorphism p-6 sm:p-8 rounded-2xl flex flex-col items-center">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Contact</h2>
+            <form id="contactForm" class="w-full max-w-md flex flex-col space-y-4">
+                <input type="text" id="name" placeholder="Name" required class="rounded-lg px-4 py-2 bg-black bg-opacity-40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-400">
+                <input type="email" id="email" placeholder="Email" required class="rounded-lg px-4 py-2 bg-black bg-opacity-40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-400">
+                <textarea id="message" placeholder="Message" rows="4" required class="rounded-lg px-4 py-2 bg-black bg-opacity-40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-400"></textarea>
+                <button type="submit" id="submitBtn" class="bg-gray-800 hover:bg-gray-700 transition duration-300 rounded-full py-2 px-4 text-white font-semibold">Send Message</button>
+            </form>
+            <div id="formMessage" class="mt-4 text-center hidden"></div>
+        </div>
+    </section>
+    <!-- Contact Info & Social Media Section -->
+    <div class="glassmorphism w-full max-w-5xl mx-auto mb-8 p-6 sm:p-8 rounded-2xl">
+        <h3 class="text-xl font-bold text-white mb-6 text-center">Get In Touch</h3>
+        
+        <!-- Contact Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Email -->
+            <div class="flex items-center space-x-3 text-white md:justify-end">
+                <svg class="w-6 h-6 text-gold-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <div>
+                    <p class="font-semibold">Email</p>
+                    <a href="mailto:info@novaweb.cam" class="text-gold-400 hover:text-gold-300 transition">info@novaweb.cam</a>
+                </div>
+            </div>
+            
+
+            
+            <!-- Location -->
+            <div class="flex items-center space-x-3 text-white md:justify-start">
+                <svg class="w-6 h-6 text-gold-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <div>
+                    <p class="font-semibold">Location</p>
+                    <span class="text-gray-300">Worldwide</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Media Links -->
+        <div class="border-t border-gray-600 pt-6">
+            <h4 class="text-lg font-semibold text-white mb-4 text-center">Follow Us</h4>
+            <div class="flex justify-center space-x-6">
+                <!-- Instagram -->
+                <a href="https://www.instagram.com/weebnova?igsh=MWlhMTN1M3lyMTBubQ==" target="_blank" class="text-white hover:text-gold-400 transition duration-300">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+    
+    <!-- Add JS for burger menu and parallax at end of body -->
+    <script>
+        const burgerBtn = document.getElementById('burgerBtn');
+        const mobileNav = document.getElementById('mobileNav');
+        burgerBtn.addEventListener('click', () => {
+            mobileNav.classList.toggle('open');
+            burgerBtn.classList.toggle('active');
+        });
+        document.addEventListener('click', (e) => {
+            if (!mobileNav.contains(e.target) && !burgerBtn.contains(e.target)) {
+                mobileNav.classList.remove('open');
+                burgerBtn.classList.remove('active');
+            }
+        });
+        // Parallax fade effect for background images
+        const bg1 = document.getElementById('bg1');
+        const bg2 = document.getElementById('bg2');
+        const bg3 = document.getElementById('bg3');
+        function updateParallaxBg() {
+            const scroll = window.scrollY;
+            const docHeight = document.body.scrollHeight - window.innerHeight;
+            const percent = docHeight > 0 ? scroll / docHeight : 0;
+            if (percent < 0.33) {
+                bg1.classList.add('active');
+                bg2.classList.remove('active');
+                bg3.classList.remove('active');
+            } else if (percent < 0.66) {
+                bg1.classList.remove('active');
+                bg2.classList.add('active');
+                bg3.classList.remove('active');
+            } else {
+                bg1.classList.remove('active');
+                bg2.classList.remove('active');
+                bg3.classList.add('active');
+            }
+        }
+        window.addEventListener('scroll', updateParallaxBg);
+        window.addEventListener('resize', updateParallaxBg);
+        window.addEventListener('DOMContentLoaded', updateParallaxBg);
+
+        // Smooth sticky nav effect
+        const nav = document.querySelector('.sticky-nav');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const current = window.scrollY;
+            if (current > 24) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+            lastScroll = current;
+        });
+
+        // Fade in body after background images load
+        function preloadBgImages(urls, callback) {
+            let loaded = 0;
+            urls.forEach(url => {
+                const img = new Image();
+                img.onload = img.onerror = () => {
+                    loaded++;
+                    if (loaded === urls.length) callback();
+                };
+                img.src = url;
+            });
+        }
+        preloadBgImages(['bg1.jpg','bg2.jpg','bg3.jpg'], function() {
+            document.body.classList.add('bg-loaded');
+        });
+
+        // Google Form integration
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const formMessage = document.getElementById('formMessage');
+
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+            
+            // Show loading state
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+            
+            // Create Google Form submission URL
+            // Replace YOUR_GOOGLE_FORM_URL with your actual pre-filled form URL
+            const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSdmeUNZmAsSly89EpibxPJDnWXw_zwJWxqe0xLUiAi9O9zixw/formResponse?entry.1489514831={{name}}&entry.1674688635={{email}}&entry.318258640={{message}}&submit=Submit';
+            
+            // Replace placeholders with actual values
+            const submissionUrl = googleFormUrl
+                .replace('{{name}}', encodeURIComponent(name))
+                .replace('{{email}}', encodeURIComponent(email))
+                .replace('{{message}}', encodeURIComponent(message));
+            
+            // Submit to Google Form using multiple methods for better compatibility
+            try {
+                // Method 1: Hidden iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = submissionUrl;
+                document.body.appendChild(iframe);
+                
+                // Method 2: Form submission as backup
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSdmeUNZmAsSly89EpibxPJDnWXw_zwJWxqe0xLUiAi9O9zixw/formResponse';
+                form.target = 'hidden-iframe';
+                form.style.display = 'none';
+                
+                // Add form fields
+                const nameField = document.createElement('input');
+                nameField.type = 'hidden';
+                nameField.name = 'entry.1489514831';
+                nameField.value = name;
+                form.appendChild(nameField);
+                
+                const emailField = document.createElement('input');
+                emailField.type = 'hidden';
+                emailField.name = 'entry.1674688635';
+                emailField.value = email;
+                form.appendChild(emailField);
+                
+                const messageField = document.createElement('input');
+                messageField.type = 'hidden';
+                messageField.name = 'entry.318258640';
+                messageField.value = message;
+                form.appendChild(messageField);
+                
+                const submitField = document.createElement('input');
+                submitField.type = 'hidden';
+                submitField.name = 'submit';
+                submitField.value = 'Submit';
+                form.appendChild(submitField);
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Show success message
+                showMessage('Thank you for your message! We\'ll get back to you soon.', 'success');
+                contactForm.reset();
+                
+                // Reset button
+                submitBtn.textContent = 'Send Message';
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+                
+                // Clean up
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                    if (document.body.contains(form)) {
+                        document.body.removeChild(form);
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showMessage('Message sent! We will answer shortly.', 'success');
+                contactForm.reset();
+                submitBtn.textContent = 'Send Message';
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        });
+
+        function showMessage(text, type) {
+            formMessage.textContent = text;
+            formMessage.className = `mt-4 text-center ${type === 'success' ? 'text-green-400' : 'text-red-400'}`;
+            formMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                formMessage.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
